@@ -104,7 +104,7 @@ export default class GalleryManageView extends Vue {
   save() {
     this.albumService.putGallery(this.album, this.galleries)
       .then(response => response.json())
-      .then(data => {})//location.reload())
+      .then(data => location.reload())
       .catch((err) => console.log(err));
   }
 

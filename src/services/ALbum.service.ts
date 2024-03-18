@@ -4,8 +4,8 @@ import Gallery from "@/models/Gallery.model";
 export default class AlbumService {
     private baseUrl = "http://192.168.1.44:8094";
 
-    getAll(){
-        return fetch(this.baseUrl+"/album/getAll")
+    getAll(name:string,page:string){
+        return fetch(this.baseUrl+"/album/getAll?name="+name+"&page="+page)
     }
 
     get(id:string | string[]){

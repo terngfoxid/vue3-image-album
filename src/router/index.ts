@@ -17,6 +17,16 @@ const routes: Array<RouteRecordRaw> = [
     component: ALbumView
   },
   {
+    path:'/album/page/:page',
+    name: 'albumPage',
+    component: ALbumView
+  },
+  {
+    path:'/album/name/:name/page/:page',
+    name: 'albumNamePage',
+    component: ALbumView
+  },
+  {
     path:'/album/create',
     name: 'album-create',
     component: ALbumCreateView

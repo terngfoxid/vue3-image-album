@@ -36,6 +36,40 @@
           <AlbumRow v-for="(album, index) in Albums" :key="album.id" :album="album" :index="index + 1"></AlbumRow>
         </tbody>
       </table>
+      <div>
+        <template v-if="Allpage != null">
+        <template v-if="Name == ''">
+          <router-link v-if="Page != '1'" :to="'/album/page/' + (parseInt(Page.toString()) - 1)">Back</router-link> |
+          <router-link v-if="parseInt(Page.toString()) < parseInt(Allpage.toString())"
+            :to="'/album/page/' + (parseInt(Page.toString()) + 1)">Next</router-link>
+        </template>
+        <template v-else>
+          <router-link v-if="Page != '1'"
+            :to="'/album/name/' + Name + '/page/' + (parseInt(Page.toString()) - 1)">Back</router-link> |
+          <router-link v-if="parseInt(Page.toString()) < parseInt(Allpage.toString())"
+            :to="'/album/name/' + Name + '/page/' + (parseInt(Page.toString()) + 1)">Next</router-link>
+        </template>
+      </template>
+      </div>
+      <div>
+        <template v-if="Allpage != null">
+        <template v-for="n in parseInt(Allpage.toString())" key="n">
+          <template v-if="Name == ''">
+            <router-link :to="'/album/page/' + n" :key="n">{{ n }}</router-link>
+
+            <template v-if="n < parseInt(Allpage.toString())">
+              |
+            </template>
+          </template>
+          <template v-else>
+            <router-link :to="'/album/name/' + Name + '/page/' + n" :key="n">{{ n }}</router-link>
+            <template v-if="n < parseInt(Allpage.toString())">
+              |
+            </template>
+          </template>
+        </template>
+      </template>
+      </div>
     </div>
   </div>
 </template>
@@ -52,7 +86,7 @@ import AlbumService from '@/services/ALbum.service';
   },
   created() {
     this.$watch(
-      () => true,
+      () => this.$route.params,
       () => {
         this.init()
       },
@@ -61,20 +95,32 @@ import AlbumService from '@/services/ALbum.service';
   }
 })
 export default class ALbumView extends Vue {
-  albumService : AlbumService = new AlbumService();
+  albumService: AlbumService = new AlbumService();
 
   Albums: Album[] = []
+  Name: string | string[] = "";
+  Page: string | string[] = "";
+  Allpage: number | null = 0;
 
   AlbumName: string | null = "";
   init() {
-    this.albumService.getAll()
+    this.Name = this.$route.params.name;
+    if (this.Name == null) this.Name = "";
+    this.Page = this.$route.params.page;
+    if (this.Page == null) this.Page = "1";
+    this.AlbumName = this.Name.toString()
+
+    this.albumService.getAll(this.Name.toString(), this.Page.toString())
       .then(response => response.json())
-      .then(data => this.Albums = data.Object)
+      .then(data => {
+        this.Albums = data.Object.album
+        this.Allpage =  Math.ceil(data.Object.allAlbumCount / 10);
+      })
       .catch((err) => console.log(err));
-    console.log(this.Albums)
   }
   search() {
-    console.log("Searching "+this.AlbumName)
+    if (this.AlbumName == null || this.AlbumName == "") location.replace("/album/page/1")
+    else location.replace("/album/name/" + this.AlbumName + "/page/1")
   }
 }
 </script>
