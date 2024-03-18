@@ -7,7 +7,11 @@
     </div>
     <div class="layout">
       <label>Cover Photo:</label>
-      <input type="file" @change="onFileChanged($event)" accept="image/*" capture required />
+      <div>
+        <input type="file" @change="onFileChanged($event)" accept="image/*" capture required />
+        <p class="error">*only (JPEG, GIF and PNG)</p>
+        <p class="error" v-if="(error != null) && (error != '')">{{ error }}</p>
+      </div>
     </div>
     <div class="layout" v-if="imageUrl != null">
       <label></label>
@@ -20,16 +24,13 @@
     <div class="layout">
       <label></label>
       <button>Save</button>
+      <router-link to="/album/" custom v-slot="{ navigate }">
+        <button @click="navigate" role="link">
+          Back
+        </button>
+      </router-link>
     </div>
   </form>
-  <div class="layout">
-    <label></label>
-    <router-link to="/album/" custom v-slot="{ navigate }">
-      <button @click="navigate" role="link">
-        Back
-      </button>
-    </router-link>
-  </div>
 </template>
 
 <script lang="ts">
@@ -43,24 +44,35 @@ import AlbumService from '@/services/ALbum.service';
   },
 })
 export default class ALbumCreateView extends Vue {
-  albumService : AlbumService = new AlbumService();
+  albumService: AlbumService = new AlbumService();
 
   album: Album = new Album();
   imageUrl: string | null = null;
+  error: string | null = "";
 
   onFileChanged($event: Event) {
+    this.error = '';
+    const acceptedImageTypes = ['image/png', 'image/jpeg', 'image/gif']
     const target = $event.target as HTMLInputElement;
     if (target && target.files) {
+      if (!acceptedImageTypes.includes(target.files[0].type)) {
+        this.error = "ตรวจพบไฟล์ที่ไม่ใช่รูปภาพ";
+        return;
+      }
       this.album.cover_image = target.files[0];
     }
     if (this.album.cover_image != null) {
       this.imageUrl = URL.createObjectURL(this.album.cover_image)
     }
   }
-  postNewAlbum(){
+  postNewAlbum() {
+    if (this.error != "") {
+      this.error = "โปรดแก้ไขไฟล์ให้ถูกต้อง"
+      return;
+    }
     this.albumService.post(this.album).then(response => response.json())
-    .then( () => document.location.href = '/album')
-        .catch((err) => console.log(err));
+      .then(() => document.location.href = '/album')
+      .catch((err) => console.log(err));
   }
 }
 </script>
@@ -75,5 +87,9 @@ export default class ALbumCreateView extends Vue {
 label {
   width: 20%;
   text-align: end;
+}
+
+.error {
+  color: red;
 }
 </style>

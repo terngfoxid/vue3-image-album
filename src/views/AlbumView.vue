@@ -3,7 +3,7 @@
     <h1>Album</h1>
     <div class="page">
       <div class="top-menu">
-        <form @submit.prevent="search()">
+        <form @submit.prevent="searchByName()">
           <div class="search-form">
             <input type="text" placeholder="Search by Album name" v-model="AlbumName">
             <button>Search</button>
@@ -118,7 +118,7 @@ export default class ALbumView extends Vue {
       })
       .catch((err) => console.log(err));
   }
-  search() {
+  searchByName() {
     if (this.AlbumName == null || this.AlbumName == "") location.replace("/album/page/1")
     else location.replace("/album/name/" + this.AlbumName + "/page/1")
   }

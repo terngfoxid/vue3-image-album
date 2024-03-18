@@ -7,15 +7,24 @@
     </div>
     <div class="layout">
       <label>Cover Photo:</label>
-      <input type="file" @change="onFileChanged($event)" accept="image/*" capture/>
+      <div>
+        <input v-if="(cur_imageUrl == null) || (cur_imageUrl == '')" type="file" @change="onFileChanged($event)"
+          accept="image/*" capture required />
+        <input v-else type="file" @change="onFileChanged($event)" accept="image/*" capture />
+        <p class="error">*only (JPEG, GIF and PNG)</p>
+        <p class="error" v-if="(error != null) && (error != '')">{{ error }}</p>
+      </div>
     </div>
     <div class="layout" v-if="imageUrl != null">
       <label>New Cover Photo:</label>
       <img :src="imageUrl" style="width: 200px;">
     </div>
-    <div class="layout" v-if="cur_imageUrl != null && imageUrl == null">
+    <div class="layout" v-if="cur_imageUrl != null&& cur_imageUrl != '' && imageUrl == null">
       <label>Current Cover Photo:</label>
-      <img :src="cur_imageUrl" style="width: 200px;">
+      <div class="parent">
+        <img :src="cur_imageUrl" style="width: 200px;">
+        <button class="child remove" @click="deleteFile()">ลบ</button>
+      </div>
     </div>
     <div class="layout">
       <label>Description:</label>
@@ -24,16 +33,13 @@
     <div class="layout">
       <label></label>
       <button>Save</button>
+      <router-link to="/album/" custom v-slot="{ navigate }">
+        <button @click="navigate" role="link">
+          Back
+        </button>
+      </router-link>
     </div>
   </form>
-  <div class="layout">
-    <label></label>
-    <router-link to="/album/" custom v-slot="{ navigate }">
-      <button @click="navigate" role="link">
-        Back
-      </button>
-    </router-link>
-  </div>
 </template>
 
 <script lang="ts">
@@ -53,15 +59,23 @@ import { Options, Vue } from 'vue-class-component';
   }
 })
 export default class ALbumEditView extends Vue {
-  albumService : AlbumService = new AlbumService();
+  albumService: AlbumService = new AlbumService();
 
   album: Album = new Album();
   imageUrl: string | null = null;
   cur_imageUrl: string | undefined = undefined;
 
+  error: string | null = "";
+
   onFileChanged($event: Event) {
+    this.error = '';
+    const acceptedImageTypes = ['image/png', 'image/jpeg', 'image/gif']
     const target = $event.target as HTMLInputElement;
     if (target && target.files) {
+      if (!acceptedImageTypes.includes(target.files[0].type)) {
+        this.error = "ตรวจพบไฟล์ที่ไม่ใช่รูปภาพ";
+        return;
+      }
       this.album.cover_image = target.files[0];
     }
     if (this.album.cover_image != null) {
@@ -69,7 +83,7 @@ export default class ALbumEditView extends Vue {
     }
   }
 
-  init(){
+  init() {
     this.albumService.get(this.$route.params.id)
       .then(response => response.json())
       .then(data => {
@@ -79,10 +93,19 @@ export default class ALbumEditView extends Vue {
       .catch((err) => console.log(err));
   }
 
-  putEditAlbum(){
+  putEditAlbum() {
+    if (this.error != "") {
+      this.error = "โปรดแก้ไขไฟล์ให้ถูกต้อง"
+      return;
+    }
     this.albumService.put(this.album).then(response => response.json())
-        .then(()=> document.location.href = '/album')
-        .catch((err) => console.log(err));
+      .then(() => document.location.href = '/album')
+      .catch((err) => console.log(err));
+  }
+
+  deleteFile(){
+    this.cur_imageUrl = '';
+    this.error = "กรุณาอัพโหลดภาพ"
   }
 }
 </script>
@@ -97,5 +120,26 @@ export default class ALbumEditView extends Vue {
 label {
   width: 20%;
   text-align: end;
+}
+
+.parent {
+  position: relative;
+}
+
+.child {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.remove {
+  border-radius: 5px;
+  padding: 3px;
+  background-color: red;
+  color: white;
+}
+
+.error {
+  color: red;
 }
 </style>

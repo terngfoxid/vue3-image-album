@@ -12,7 +12,7 @@
             Manage Gallery
           </button>
         </router-link>
-        <router-link :to="'/album/edit/' + album.id" custom v-slot="{ navigate }">
+        <router-link :to="'/album/update/' + album.id" custom v-slot="{ navigate }">
           <button @click="navigate" role="link">
             Edit
           </button>
@@ -36,14 +36,17 @@ import AlbumService from '@/services/ALbum.service';
 
 })
 export default class AlbumRow extends Vue {
-  albumService : AlbumService = new AlbumService();
+  albumService: AlbumService = new AlbumService();
   album!: Album
   index!: number
 
   deleteAlbum() {
-    this.albumService.delete(this.album.id.toString()).then(response => response.json())
-        .then(()=> document.location.href = '/album')
-        .catch((err) => console.log(err));
+    var result = confirm("Delete this album?");
+    if (result) {
+      this.albumService.delete(this.album.id.toString()).then(response => response.json())
+      .then(() => document.location.href = '/album')
+      .catch((err) => console.log(err));
+    }
   }
 }
 </script>

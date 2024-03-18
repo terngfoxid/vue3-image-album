@@ -14,7 +14,11 @@
   </div>
   <div class="layout">
     <label>Gallery:</label>
-    <input id="fileInput" type="file" multiple @change="onFileChanged($event)" accept="image/*" capture />
+    <div>
+      <input id="fileInput" type="file" multiple @change="onFileChanged($event)" accept="image/*" capture />
+      <p class="error">*only (JPEG, GIF and PNG)</p>
+      <p class="error" v-if="(error != null) && (error != '')">{{ error }}</p>
+    </div>
   </div>
   <div class="layout" v-if="(imageUrl != null && imageUrl.length > 0) || (galleries != null && galleries.length > 0)">
     <label></label>
@@ -66,12 +70,20 @@ export default class GalleryManageView extends Vue {
   galleries: Gallery[] = [];
   imageUrl: string[] | null = [];
 
+  error: string | null = "";
+
   onFileChanged($event: Event) {
+    this.error = '';
+    const acceptedImageTypes = ['image/png', 'image/jpeg', 'image/gif']
     const target = $event.target as HTMLInputElement;
     this.album.gallery_image = [];
     this.imageUrl = [];
     if (target && target.files) {
       for (let i = 0; i < target.files.length; i++) {
+        if (!acceptedImageTypes.includes(target.files[i].type)) {
+          this.error = "ตรวจพบไฟล์ที่ไม่ใช่รูปภาพ";
+          continue;
+        }
         this.album.gallery_image?.push(target.files[i])
       }
     }
@@ -102,6 +114,10 @@ export default class GalleryManageView extends Vue {
   }
 
   save() {
+    if(this.error != "") {
+      this.error = "โปรดแก้ไขไฟล์ให้ถูกต้อง"
+      return;
+    }
     this.albumService.putGallery(this.album, this.galleries)
       .then(response => response.json())
       .then(data => location.reload())
@@ -158,5 +174,9 @@ label {
   padding: 3px;
   background-color: red;
   color: white;
+}
+
+.error {
+  color: red;
 }
 </style>

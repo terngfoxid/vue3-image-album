@@ -32,8 +32,8 @@ const routes: Array<RouteRecordRaw> = [
     component: ALbumCreateView
   },
   {
-    path:'/album/edit/:id',
-    name: 'album-edit',
+    path:'/album/update/:id',
+    name: 'album-update',
     component: ALbumEditView
   },
   {
